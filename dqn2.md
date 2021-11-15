@@ -23,13 +23,13 @@
 
 We use Prioritized Experience Replay to boost the training speed. We've also done some research into Dueling DQN and we'll show both of them.
 
-We've completed this report in English and open source our project on [GitHub](https://github.com/qio-bot/dqn-breakout) as well.
+We've completed this report in English and open-source our project on [GitHub](https://github.com/qio-bot/dqn-breakout) as well.
 
 
 
-## Original Implementation 
+## Original Implementation
 
-During training we generate episodes using $\epsilon$-greedy policy with the current approximation of the action-value function $Q .$ The transition tuples $\left(s_{t}, a_{t}, r_{t}, s_{t+1}\right)$ encountered during training are stored in the replay buffer. The generation of new episodes is interleaved with neural network training. The network is trained using mini-batch gradient descent on the loss $\mathcal{L}$ which encourages the approximated Q-function to satisfy the Bellman equation: $\mathcal{L}=\mathbb{E}\left(Q\left(s_{t}, a_{t}\right)-y_{t}\right)^{2}$, where $y_{t}=r_{t}+\gamma \max _{a^{\prime} \in \mathcal{A}} Q\left(s_{t+1}, a^{\prime}\right)$ and the tuples $\left(s_{t}, a_{t}, r_{t}, s_{t+1}\right)$ are sampled from the replay buffer $^{1}$.
+During training we generate episodes using $\epsilon$-greedy policy with the current approximation of the action-value function $Q .$ The transition tuples $\left(s_{t}, a_{t}, r_{t}, s_{t+1}\right)$ encountered during training are stored in the replay buffer. The generation of new episodes is interleaved with neural network training. The network is trained using mini-batch gradient descent on the loss $\mathcal{L}$ which encourages the approximated Q-function to satisfy the Bellman equation: $\mathcal{L}=\mathbb{E}\left(Q\left(s_{t}, a_{t}\right)-y_{t}\right)^{2}$, where $y_{t}=r_{t}+\gamma \max _{a^{\prime} \in \mathcal{A}} Q\left(s_{t+1}, a^{\prime}\right)$ and the tuples $\left(s_{t}, a_{t}, r_{t}, s_{t+1}\right)$ are sampled from the replay buffer . 
 
 ### main function:
 
@@ -169,6 +169,8 @@ Since the training samples obtained by the interaction between the agent and the
 
 ### Dueling Network
 
+
+
 Let's see the difference between the normal DQN and the Dueling DQN. We can alter the structure of the original DQN by separating the representation of state value and action advantages to improve the performance significantly.
 
 The DQN neural network directly outputs the Q value of each action, and the Q value of each action of Dueling DQN is determined by the following formula. This is particularly useful when there're states that don't affect the environment whatever actions they take.
@@ -181,7 +183,7 @@ $Q(s,a;\theta,\alpha,\beta)=V(s;\theta,\beta)+(A(s,a;\theta,\alpha)-\frac{1}{\mi
 
 where $𝜃$ denotes the parameters of the convolutional layers, while $𝛼$ and $𝛽$ are the parameters of the two streams of fully-connected layers.
 
-
+​	<img src="https://pig-1307013046.cos.ap-nanjing.myqcloud.com/PigCo/image-20211115133103281.png" alt="image-20211115133103281" style="zoom: 50%;" />
 
 ## Prioritized Experience Replay
 
@@ -281,18 +283,18 @@ Here are some theorems we could infer from the definition.
 
 + Sample a copy of data 
 
-  1）Take node 0 as the parent node and traverse its child nodes 
+  + Take node 0 as the parent node and traverse its child nodes 
 
-  2）If the left child node is greater than s, take the left node as the parent node and go through its child nodes 
+  + If the left child node is greater than s, take the left node as the parent node and go through its child nodes 
 
-  3）else subtract the value of the left child node from s, select the right child node as the parent node, and traverse its child nodes 
+  + else subtract the value of the left child node from s, select the right child node as the parent node, and traverse its child nodes 
 
-  4）Until the leaf node is traversed, the value of the leaf node is the priority, and the subscript corresponds to the value subscript. The corresponding value can be found from the transition 
+  + Until the leaf node is traversed, the value of the leaf node is the priority, and the subscript corresponds to the value subscript. The corresponding value can be found from the transition 
 
   ```python
   def retrieve(self, tree_idx, s):
           left = 2 * tree_idx + 1
-          right = left + 1
+          right = 2 * tree_idx + 2
           if left >= len(self.tree):
               return tree_idx
           if s <= self.tree[left]:
@@ -305,7 +307,7 @@ Here are some theorems we could infer from the definition.
   def get(self, s):
           tree_idx = self._retrieve(0, s)
           data_Idx = tree_idx - self.capacity + 1
-          return  tree_idx, self.tree[tree_idx],  data_Idx
+          return  tree_idx,  data_Idx
   ```
 
 - sample batch data 
@@ -315,16 +317,16 @@ Here are some theorems we could infer from the definition.
 ```python
 def sample(self, batch_size: int) :
         tree_idxs = []
-        data_idx = []
+        indices= []
         segment = self .total() / batch_size
         for i in range(batch_size):
             a = segment * i
             b = segment * (i + 1)
             s = random.uniform(a, b)
-            idx, _, data_idx = self.tree.get(s)
+            idx, data_idx = self.tree.get(s)
             tree_idxs.append(idx)
-            data_idx.append(data_idx)
-        return tree_idxs,data_idx
+            indices.append(data_idx)
+        return tree_idxs,indices
 ```
 
 
@@ -340,9 +342,9 @@ On the basis of the original, add SumTree member variables and record priority.
 
   ```python
   self.prio_max = 0.1
-          self.a = 0.6    
-          self.e = 0.01
-          self.tree = SumTree(capacity)
+  self.a = 0.6    
+  self.e = 0.01
+  self.tree = SumTree(capacity)
   ```
 
 + push
@@ -531,7 +533,7 @@ def plot_average_reward (filename_1, filename_2, color1, color2  ):
 
   The experiment is contingent since only ran once.
 
-+ DDQN 
++ Poor Performance of DDQN 
   The original paper uses 6 different random seeds with the same hyper-parameters.
   Because computing power and time are prioritized, only one experiment is performed, which is more contingent.
 
@@ -552,33 +554,33 @@ def plot_average_reward (filename_1, filename_2, color1, color2  ):
 
   ```python
   >>> x.size()
-  torch.Size([12])
-  >>> y = torch.arange(12).view(12,1)
+  torch.Size([32])
+  >>> y = torch.arange(32).view(32,1)
   >>> y.size()
-  torch.Size([12, 1])
+  torch.Size([32, 1])
   >>> z = x*y
   >>> z.size()
-  torch.Size([12, 12])
+  torch.Size([32, 32])
   ```
 
-  [32]*[32,1] will be [32,32].
+  Then, [32]*[32,1] will be [32,32].
   solution:
 
   ```python
-  >>> x = x.view(12,1)
+  >>> x = x.view(32,1)
   >>> z = x*y
   >>> z.size()
-  torch.Size([12, 1])
+  torch.Size([32, 1])
   ```
 
   or
 
   ```python
-  >>> x = torch.arange(12)
+  >>> x = torch.arange(32)
   >>> x = x.unsqueeze(1)
   >>> z=x*y
   >>> z.size()
-  torch.Size([12, 1])
+  torch.Size([32, 1])
   ```
 
   
