@@ -23,7 +23,7 @@
 
 We use Prioritized Experience Replay to boost the training speed. We've also done some research into Dueling DQN and we'll show both of them.
 
-We've completed this report in English and open-source our project on [GitHub](https://github.com/qio-bot/dqn-breakout) as well.
+We've completed this report in English and open source our project on [GitHub](https://github.com/qio-bot/dqn-breakout) as well.
 
 
 
